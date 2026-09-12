@@ -54,6 +54,17 @@ def ots_health() -> dict[str, Any]:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
+@app.get("/api/ots/probe")
+def probe_ots_url(url: str) -> dict[str, Any]:
+    try:
+        config = OpenTAKServerConfig(base_url=url, map_url=url, timeout_s=2, verify_tls=False)
+        response = OpenTAKServerClient(config).health()
+    except OpenTAKServerError as exc:
+        return {"ok": False, "url": url, "detail": str(exc)}
+
+    return {"ok": True, "url": url, "response": response}
+
+
 @app.post("/api/ots/sync")
 def sync_ots_cot(page: int = 1, per_page: int = 20) -> dict[str, Any]:
     try:

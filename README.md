@@ -92,6 +92,8 @@ OTS_VERIFY_TLS=true
 
 La app carga `.env` automaticamente al iniciar. Si solo quieres abrir el mapa desde el dashboard sin reiniciar el backend, el boton `Abrir mapa OTS` permite pegar la URL del WebUI de OpenTAKServer y la guarda en el navegador.
 
+Importante: `http://localhost:8080` solo funciona si OpenTAKServer esta corriendo en esta misma maquina y expuesto en el puerto `8080`. Si OTS esta en Kubernetes, usa el host del `Ingress` o la IP/puerto del `LoadBalancer`.
+
 Tambien se puede usar token directo:
 
 ```bash

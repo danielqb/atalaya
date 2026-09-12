@@ -285,6 +285,11 @@
       await fetchEvents();
     }
 
+    async function probeOtsMap(url) {
+      const response = await fetch(`/api/ots/probe?url=${encodeURIComponent(url)}`);
+      return response.json();
+    }
+
     async function publishDemoToOts() {
       const response = await fetch("/api/ots/publish-demo", { method: "POST" });
       if (!response.ok) {
@@ -304,7 +309,25 @@
         otsMapUrl = value.trim();
         localStorage.setItem("atalaya_ots_map_url", otsMapUrl);
       }
-      window.open(otsMapUrl, "_blank", "noopener");
+      probeOtsMap(otsMapUrl).then((result) => {
+        if (result.ok) {
+          window.open(otsMapUrl, "_blank", "noopener");
+          return;
+        }
+
+        const replacement = prompt(
+          `No pude conectar con ${otsMapUrl}/api/health. Pega la URL real del WebUI OTS o deja vacio para limpiar.`
+        );
+        if (!replacement) {
+          localStorage.removeItem("atalaya_ots_map_url");
+          otsMapUrl = null;
+          return;
+        }
+
+        otsMapUrl = replacement.trim();
+        localStorage.setItem("atalaya_ots_map_url", otsMapUrl);
+        window.open(otsMapUrl, "_blank", "noopener");
+      });
     }
 
     async function resetEvents() {

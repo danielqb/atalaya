@@ -4,7 +4,7 @@ Agentes IA para gestion de riesgos en tiempo real con TAK/OpenTAK.
 
 ## Resumen
 
-VigilIA es una estacion de trabajo inteligente para centros de operaciones de emergencia. Su objetivo es conectarse a un flujo de eventos en tiempo real, como OpenTAK Server o mensajes Cursor on Target, filtrar ruido operacional y entregar solo alertas verificadas, priorizadas y accionables.
+VigilIA es una estacion de trabajo inteligente para centros de operaciones de emergencia. Su objetivo es conectarse a un flujo de eventos en tiempo real, provenientes de fuentes oficiales internacionales como la NASA, Copernicus y sistemas especializados como OpenTAK Server, permitiendo filtrar y entregar alertas verificadas, priorizadas y accionables.
 
 El problema principal que resuelve es el exceso de informacion no confiable: falsos positivos, reportes duplicados, datos incompletos, rumores, ubicaciones ambiguas y eventos que no requieren accion inmediata. VigilIA actua como una capa de verificacion y priorizacion antes de que la informacion llegue a rescatistas, coordinadores o tomadores de decision.
 

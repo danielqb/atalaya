@@ -1,0 +1,74 @@
+[
+  {
+    "uid": "cali-terremoto-2026-001",
+    "type": "CASEVAC",
+    "callsign": "Alpha-1",
+    "lat": 3.4520,
+    "lon": -76.5322,
+    "time": "2026-09-12T14:32:00Z",
+    "detail": {
+      "message": "Edificio de 4 pisos colapsado parcialmente cerca de Plaza de Cayzedo, al menos 3 personas atrapadas bajo escombros, se escuchan voces",
+      "priority": "critical"
+    }
+  },
+  {
+    "uid": "cali-terremoto-2026-004",
+    "type": "CASEVAC",
+    "callsign": "Alpha-1",
+    "lat": 3.4522,
+    "lon": -76.5320,
+    "time": "2026-09-12T14:34:30Z",
+    "detail": {
+      "message": "Actualizacion: se logro contacto visual con 2 de los 3 atrapados, uno con sangrado activo en brazo, equipo de rescate estructural avanzando por el costado norte",
+      "priority": "critical"
+    }
+  },
+  {
+    "uid": "cali-terremoto-2026-002",
+    "type": "HAZARD",
+    "callsign": "Bravo-2",
+    "lat": 3.4540,
+    "lon": -76.5326,
+    "time": "2026-09-12T14:35:00Z",
+    "detail": {
+      "message": "Puente Ortiz sobre el rio Cali con grieta estructural visible y riesgo de colapso, olor a gas en la zona, evitar cruce vehicular y peatonal",
+      "priority": "critical"
+    }
+  },
+  {
+    "uid": "cali-terremoto-2026-005",
+    "type": "HAZARD",
+    "callsign": "Bravo-2",
+    "lat": 3.4538,
+    "lon": -76.5330,
+    "time": "2026-09-12T14:37:00Z",
+    "detail": {
+      "message": "Confirmada fuga de gas cerca del Puente Ortiz, bomberos iniciando evacuacion de 2 cuadras a la redonda, se solicita cierre total de la via",
+      "priority": "critical"
+    }
+  },
+  {
+    "uid": "cali-terremoto-2026-003",
+    "type": "FINDING",
+    "callsign": "Charlie-3",
+    "lat": 3.4390,
+    "lon": -76.5350,
+    "time": "2026-09-12T14:38:00Z",
+    "detail": {
+      "message": "Sobreviviente localizado en Barrio San Fernando, consciente, atrapado bajo escombros, fractura visible en pierna, requiere equipo de rescate estructural",
+      "priority": "high"
+    }
+  },
+  {
+    "uid": "cali-terremoto-2026-006",
+    "type": "FINDING",
+    "callsign": "Charlie-3",
+    "lat": 3.4391,
+    "lon": -76.5349,
+    "time": "2026-09-12T14:40:15Z",
+    "detail": {
+      "message": "Sobreviviente ya extraido de los escombros en Barrio San Fernando, consciente y estable, se solicita ambulancia para traslado a centro medico",
+      "priority": "high"
+    }
+  }
+]

@@ -104,6 +104,14 @@ class TacticalVoiceBot:
         if text:
             self.speak(text)
 
+    def stop(self):
+        """Cierra la conexion con Murmur.
+
+        pymumble corre en un hilo no-daemon; sin esto el proceso que use el bot
+        se queda colgado al terminar aunque el trabajo ya se haya completado.
+        """
+        self._mumble.stop()
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)

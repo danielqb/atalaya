@@ -1,4 +1,8 @@
-from atalaya.data_sources.opentak import cot_record_to_atalaya_payload
+from atalaya.data_sources.opentak import (
+    cot_record_to_atalaya_payload,
+    tactical_payload_to_casevac,
+    tactical_payload_to_marker,
+)
 
 
 def test_cot_record_with_nested_point() -> None:
@@ -93,3 +97,47 @@ def test_cot_record_with_casevac() -> None:
 
     assert payload["type"] == "CASEVAC"
     assert payload["detail"]["priority"] == "critical"
+
+
+def test_tactical_payload_to_marker() -> None:
+    marker = tactical_payload_to_marker(
+        {
+            "uid": "demo-hazard-001",
+            "type": "HAZARD",
+            "callsign": "Charlie-3",
+            "lat": 4.714,
+            "lon": -74.086,
+            "detail": {
+                "message": "Cable electrico caido bloqueando ruta principal",
+                "priority": "critical",
+            },
+        }
+    )
+
+    assert marker["uid"] == "demo-hazard-001"
+    assert marker["name"] == "HAZARD - Charlie-3"
+    assert marker["latitude"] == 4.714
+    assert marker["longitude"] == -74.086
+    assert marker["remarks"] == "Cable electrico caido bloqueando ruta principal"
+
+
+def test_tactical_payload_to_casevac() -> None:
+    casevac = tactical_payload_to_casevac(
+        {
+            "uid": "demo-casevac-001",
+            "type": "CASEVAC",
+            "callsign": "Alpha-2",
+            "lat": 4.7111,
+            "lon": -74.0721,
+            "detail": {
+                "message": "1 herido, sangrado moderado, requiere extraccion",
+                "priority": "high",
+            },
+        }
+    )
+
+    assert casevac["uid"] == "demo-casevac-001"
+    assert casevac["title"] == "CASEVAC - Alpha-2"
+    assert casevac["casevac"] is True
+    assert casevac["urgent"] == 1
+    assert casevac["medline_remarks"] == "1 herido, sangrado moderado, requiere extraccion"

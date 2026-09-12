@@ -166,7 +166,9 @@
 
     <div class="toolbar">
       <button onclick="simulate()">Simular eventos</button>
+      <button onclick="publishDemoToOts()">Publicar demo en OTS</button>
       <button onclick="syncOts()">Sincronizar OTS</button>
+      <button class="secondary" onclick="openOtsMap()">Abrir mapa OTS</button>
       <button class="secondary" onclick="resetEvents()">Limpiar feed</button>
     </div>
 
@@ -198,6 +200,13 @@
 
   <script>
     let selected = null;
+    let otsMapUrl = null;
+
+    async function loadOtsConfig() {
+      const response = await fetch("/api/ots/config");
+      const data = await response.json();
+      otsMapUrl = data.map_url || null;
+    }
     const priorityClass = (priority) => {
       const knownPriorities = ["critical", "high", "medium", "low"];
       return knownPriorities.includes(priority) ? priority : "medium";
@@ -267,6 +276,24 @@
       await fetchEvents();
     }
 
+    async function publishDemoToOts() {
+      const response = await fetch("/api/ots/publish-demo", { method: "POST" });
+      if (!response.ok) {
+        const error = await response.json();
+        alert(`No se pudo publicar en OTS: ${error.detail}`);
+        return;
+      }
+      await fetchEvents();
+    }
+
+    function openOtsMap() {
+      if (!otsMapUrl) {
+        alert("Configura OTS_BASE_URL u OTS_MAP_URL para abrir el mapa de OpenTAKServer.");
+        return;
+      }
+      window.open(otsMapUrl, "_blank", "noopener");
+    }
+
     async function resetEvents() {
       selected = null;
       await fetch("/api/events/reset", { method: "POST" });
@@ -274,6 +301,7 @@
       await fetchEvents();
     }
 
+    loadOtsConfig();
     fetchEvents();
     setInterval(fetchEvents, 2000);
   </script>

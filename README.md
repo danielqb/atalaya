@@ -30,6 +30,8 @@ Ya existe una primera base ejecutable del bucle tactico:
 - API `POST /api/simulate` para cargar eventos de demo.
 - API `GET /api/events` para consultar el feed procesado.
 - API `POST /api/ots/sync` para importar CoT desde OpenTAKServer.
+- API `POST /api/ots/publish` para publicar un evento tactico en el mapa de OTS.
+- API `POST /api/ots/publish-demo` para enviar los eventos de demo al mapa de OTS.
 - API `GET /api/ots/health` para verificar conectividad con OpenTAKServer.
 - Calculo de distancia, rumbo y direccion relativa.
 - Generador tactico deterministico con contrato compatible para LLM.
@@ -82,6 +84,7 @@ Configurar `.env`:
 
 ```bash
 OTS_BASE_URL=https://your-opentakserver.example
+OTS_MAP_URL=https://your-opentakserver.example
 OTS_USERNAME=administrator
 OTS_PASSWORD=password
 OTS_VERIFY_TLS=true
@@ -100,6 +103,14 @@ Sincronizar eventos CoT desde OTS:
 ```bash
 curl -X POST "http://127.0.0.1:8000/api/ots/sync?page=1&per_page=20"
 ```
+
+Publicar un evento de Atalaya en el mapa de OTS:
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/ots/publish-demo
+```
+
+Los eventos no CASEVAC se envian a OTS con `POST /api/markers`. Los eventos `CASEVAC` se envian con `POST /api/casevac`, para que OpenTAKServer los trate como evacuaciones medicas y no solo como marcadores genericos.
 
 Atalaya normaliza cada registro OTS a su contrato interno:
 

@@ -38,6 +38,7 @@ def ots_config() -> dict[str, Any]:
     return {
         "configured": True,
         "base_url": config.base_url,
+        "map_url": config.map_url,
         "has_token": bool(config.auth_token),
         "has_credentials": bool(config.username and config.password),
         "verify_tls": config.verify_tls,
@@ -74,6 +75,44 @@ def sync_ots_cot(page: int = 1, per_page: int = 20) -> dict[str, Any]:
         processed.append(event)
 
     return {"events": processed, "skipped": skipped}
+
+
+@app.post("/api/ots/publish")
+async def publish_to_ots(payload: dict[str, Any]) -> dict[str, Any]:
+    try:
+        client = OpenTAKServerClient(OpenTAKServerConfig.from_env())
+        ots_result = client.publish_tactical_payload(payload)
+        event = process_cot_payload(payload).to_dict()
+    except EventValidationError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except OpenTAKServerError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    EVENTS.insert(0, event)
+    return {"event": event, "ots": ots_result}
+
+
+@app.post("/api/ots/publish-demo")
+def publish_demo_to_ots() -> dict[str, Any]:
+    sample_events = json.loads((DATA_DIR / "sample_events.json").read_text())
+    try:
+        client = OpenTAKServerClient(OpenTAKServerConfig.from_env())
+    except OpenTAKServerError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    published = []
+    failed = []
+    for payload in sample_events:
+        try:
+            ots_result = client.publish_tactical_payload(payload)
+            event = process_cot_payload(payload).to_dict()
+        except (EventValidationError, OpenTAKServerError, ValueError) as exc:
+            failed.append({"uid": payload.get("uid"), "reason": str(exc)})
+            continue
+        EVENTS.insert(0, event)
+        published.append({"event": event, "ots": ots_result})
+
+    return {"published": published, "failed": failed}
 
 
 @app.post("/api/cot")

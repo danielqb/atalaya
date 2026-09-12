@@ -19,6 +19,7 @@ class OpenTAKServerError(RuntimeError):
 @dataclass
 class OpenTAKServerConfig:
     base_url: str
+    map_url: str | None = None
     username: str | None = None
     password: str | None = None
     auth_token: str | None = None
@@ -33,6 +34,7 @@ class OpenTAKServerConfig:
 
         return cls(
             base_url=base_url,
+            map_url=os.getenv("OTS_MAP_URL") or base_url,
             username=os.getenv("OTS_USERNAME") or None,
             password=os.getenv("OTS_PASSWORD") or None,
             auth_token=os.getenv("OTS_AUTH_TOKEN") or None,
@@ -86,6 +88,25 @@ class OpenTAKServerClient:
     def fetch_map_state(self) -> dict[str, Any]:
         return self._json_request("GET", "/api/map_state")
 
+    def post_marker(self, payload: dict[str, Any]) -> dict[str, Any]:
+        return self._json_request("POST", "/api/markers", body=payload)
+
+    def post_casevac(self, payload: dict[str, Any]) -> dict[str, Any]:
+        return self._json_request("POST", "/api/casevac", body=payload)
+
+    def publish_tactical_payload(self, payload: dict[str, Any]) -> dict[str, Any]:
+        event_type = str(payload.get("type") or "UNKNOWN").upper()
+        if event_type == "CASEVAC":
+            return {
+                "target": "/api/casevac",
+                "response": self.post_casevac(tactical_payload_to_casevac(payload)),
+            }
+
+        return {
+            "target": "/api/markers",
+            "response": self.post_marker(tactical_payload_to_marker(payload)),
+        }
+
     def _json_request(
         self,
         method: str,
@@ -106,6 +127,7 @@ class OpenTAKServerClient:
         if auth:
             token = self.config.auth_token or self.login()
             headers["Authentication-Token"] = token
+            headers["Authorization"] = f"Bearer {token}"
 
         req = request.Request(url, data=data, headers=headers, method=method)
 
@@ -181,6 +203,57 @@ def cot_record_to_atalaya_payload(record: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def tactical_payload_to_marker(payload: dict[str, Any]) -> dict[str, Any]:
+    detail = payload.get("detail") if isinstance(payload.get("detail"), dict) else {}
+    return {
+        "uid": _required_payload_string(payload, "uid"),
+        "name": _marker_name(payload),
+        "type": _marker_cot_type(payload),
+        "latitude": _required_payload_float(payload, "lat"),
+        "longitude": _required_payload_float(payload, "lon"),
+        "ce": 10,
+        "le": 10,
+        "hae": 0,
+        "remarks": str(detail.get("message") or "").strip(),
+    }
+
+
+def tactical_payload_to_casevac(payload: dict[str, Any]) -> dict[str, Any]:
+    detail = payload.get("detail") if isinstance(payload.get("detail"), dict) else {}
+    priority = str(detail.get("priority") or "high").lower()
+    urgent = 1 if priority in {"critical", "high"} else 0
+
+    return {
+        "uid": _required_payload_string(payload, "uid"),
+        "title": _marker_name(payload),
+        "latitude": _required_payload_float(payload, "lat"),
+        "longitude": _required_payload_float(payload, "lon"),
+        "casevac": True,
+        "urgent": urgent,
+        "routine": 0 if urgent else 1,
+        "priority": 1 if priority == "critical" else 2,
+        "medline_remarks": str(detail.get("message") or "").strip(),
+        "marked_by": str(payload.get("callsign") or "Atalaya"),
+    }
+
+
+def _marker_name(payload: dict[str, Any]) -> str:
+    event_type = str(payload.get("type") or "UNKNOWN").upper()
+    callsign = str(payload.get("callsign") or "Atalaya").strip()
+    return f"{event_type} - {callsign}"
+
+
+def _marker_cot_type(payload: dict[str, Any]) -> str:
+    event_type = str(payload.get("type") or "").upper()
+    if event_type == "HAZARD":
+        return "a-u-G"
+    if event_type == "FINDING":
+        return "a-f-G"
+    if event_type == "CHAT":
+        return "a-u-G"
+    return "a-f-G"
+
+
 def _extract_point(record: dict[str, Any]) -> dict[str, Any] | None:
     candidates = [
         record.get("point"),
@@ -203,6 +276,21 @@ def _extract_point(record: dict[str, Any]) -> dict[str, Any] | None:
             }
 
     return _extract_point_from_xml(record.get("xml"))
+
+
+def _required_payload_string(payload: dict[str, Any], key: str) -> str:
+    value = payload.get(key)
+    if not isinstance(value, str) or not value.strip():
+        raise EventValidationError(f"{key} is required")
+    return value.strip()
+
+
+def _required_payload_float(payload: dict[str, Any], key: str) -> float:
+    value = payload.get(key)
+    try:
+        return float(value)
+    except (TypeError, ValueError) as exc:
+        raise EventValidationError(f"{key} must be a number") from exc
 
 
 def _extract_point_from_xml(xml: Any) -> dict[str, Any] | None:

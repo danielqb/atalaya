@@ -4,9 +4,124 @@ Agentes IA para gestion de riesgos en tiempo real con TAK/OpenTAK.
 
 ## Resumen
 
-VigilIA es una estacion de trabajo inteligente para centros de operaciones de emergencia. Su objetivo es conectarse a un flujo de eventos en tiempo real, como OpenTAK Server o mensajes Cursor on Target, filtrar ruido operacional y entregar solo alertas verificadas, priorizadas y accionables.
+VigilIA es una estacion de trabajo inteligente para centros de operaciones de emergencia. Su objetivo es conectarse a un flujo de eventos en tiempo real, provenientes de fuentes oficiales internacionales como la NASA, Copernicus y sistemas especializados como OpenTAK Server, permitiendo filtrar y entregar alertas verificadas, priorizadas y accionables.
 
 El problema principal que resuelve es el exceso de informacion no confiable: falsos positivos, reportes duplicados, datos incompletos, rumores, ubicaciones ambiguas y eventos que no requieren accion inmediata. VigilIA actua como una capa de verificacion y priorizacion antes de que la informacion llegue a rescatistas, coordinadores o tomadores de decision.
+
+## MVP Hackathon
+
+Para una entrega realista en 4h15, el alcance recomendado esta definido en [docs/mvp-spec.md](docs/mvp-spec.md). El orden de construccion por fases esta en [docs/build-phases.md](docs/build-phases.md).
+
+El bucle minimo que se debe dejar funcionando de punta a punta:
+
+1. Un dispositivo o simulador genera un evento CoT.
+2. El agente lo escucha en tiempo real.
+3. Calcula distancia y rumbo relativo.
+4. Un LLM convierte el dato tecnico en una frase tactica clara.
+5. El aviso aparece en el dashboard para el coordinador.
+
+OpenTAKServer y el Helm Chart se tratan como infraestructura base reusada. El entregable construido durante el evento es Atalaya: listener, normalizador, motor geografico, generador tactico y dashboard.
+
+## Estado Actual Del Piloto
+
+Ya existe una primera base ejecutable del bucle tactico:
+
+- API `POST /api/cot` para recibir eventos CoT/JSON.
+- API `POST /api/simulate` para cargar eventos de demo.
+- API `GET /api/events` para consultar el feed procesado.
+- API `POST /api/ots/sync` para importar CoT desde OpenTAKServer.
+- API `POST /api/ots/publish` para publicar un evento tactico en el mapa de OTS.
+- API `POST /api/ots/publish-demo` para enviar los eventos de demo al mapa de OTS.
+- API `GET /api/ots/health` para verificar conectividad con OpenTAKServer.
+- Calculo de distancia, rumbo y direccion relativa.
+- Generador tactico deterministico con contrato compatible para LLM.
+- Dashboard minimo en `/`.
+- Tests de motor geo y procesamiento.
+
+## Como Ejecutar
+
+Instalar dependencias:
+
+```bash
+uv sync --extra dev
+```
+
+Ejecutar tests:
+
+```bash
+uv run pytest -q
+```
+
+Revisar lint:
+
+```bash
+uv run ruff check .
+```
+
+Levantar la API y dashboard:
+
+```bash
+uv run uvicorn atalaya.api.main:app --app-dir src --host 127.0.0.1 --port 8000
+```
+
+Abrir:
+
+```text
+http://127.0.0.1:8000
+```
+
+Enviar eventos simulados desde terminal:
+
+```bash
+uv run python scripts/simulate_events.py
+```
+
+## Integracion OpenTAKServer
+
+Atalaya puede consumir la API de OpenTAKServer usando `GET /api/cot`. Segun la documentacion oficial de OTS, ese endpoint retorna mensajes CoT paginados y permite filtrar por `how`, `type`, `sender_callsign`, `sender_uid`, `page` y `per_page`.
+
+Configurar `.env`:
+
+```bash
+OTS_BASE_URL=https://your-opentakserver.example
+OTS_MAP_URL=https://your-opentakserver.example
+OTS_USERNAME=administrator
+OTS_PASSWORD=password
+OTS_VERIFY_TLS=true
+```
+
+La app carga `.env` automaticamente al iniciar. Si solo quieres abrir el mapa desde el dashboard sin reiniciar el backend, el boton `Abrir mapa OTS` permite pegar la URL del WebUI de OpenTAKServer y la guarda en el navegador.
+
+Importante: `http://localhost:8080` solo funciona si OpenTAKServer esta corriendo en esta misma maquina y expuesto en el puerto `8080`. Si OTS esta en Kubernetes, usa el host del `Ingress` o la IP/puerto del `LoadBalancer`.
+
+Tambien se puede usar token directo:
+
+```bash
+OTS_AUTH_TOKEN=your-authentication-token
+```
+
+El token se envia como header `Authentication-Token`, que es el mecanismo recomendado por la documentacion de autenticacion de OpenTAKServer para llamadas posteriores a la API.
+
+Sincronizar eventos CoT desde OTS:
+
+```bash
+curl -X POST "http://127.0.0.1:8000/api/ots/sync?page=1&per_page=20"
+```
+
+Publicar un evento de Atalaya en el mapa de OTS:
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/ots/publish-demo
+```
+
+Los eventos no CASEVAC se envian a OTS con `POST /api/markers`. Los eventos `CASEVAC` se envian con `POST /api/casevac`, para que OpenTAKServer los trate como evacuaciones medicas y no solo como marcadores genericos.
+
+Atalaya normaliza cada registro OTS a su contrato interno:
+
+- `point.latitude` / `point.longitude` o coordenadas del XML CoT.
+- `sender_callsign` como fuente tactica.
+- `alert` y `casevac` para clasificar prioridad.
+- `xml` / `remarks` para construir el mensaje operacional cuando exista.
 
 ## Objetivo Del Proyecto
 

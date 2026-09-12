@@ -133,6 +133,12 @@
       color: #9fb0c3;
     }
 
+    .hint {
+      margin-top: 12px;
+      color: #9fb0c3;
+      font-size: 13px;
+    }
+
     .brief {
       line-height: 1.5;
       font-size: 17px;
@@ -200,12 +206,15 @@
 
   <script>
     let selected = null;
-    let otsMapUrl = null;
+    let otsMapUrl = localStorage.getItem("atalaya_ots_map_url");
 
     async function loadOtsConfig() {
       const response = await fetch("/api/ots/config");
       const data = await response.json();
-      otsMapUrl = data.map_url || null;
+      if (data.map_url) {
+        otsMapUrl = data.map_url;
+        localStorage.setItem("atalaya_ots_map_url", otsMapUrl);
+      }
     }
     const priorityClass = (priority) => {
       const knownPriorities = ["critical", "high", "medium", "low"];
@@ -288,8 +297,12 @@
 
     function openOtsMap() {
       if (!otsMapUrl) {
-        alert("Configura OTS_BASE_URL u OTS_MAP_URL para abrir el mapa de OpenTAKServer.");
-        return;
+        const value = prompt("Pega la URL del mapa de OpenTAKServer");
+        if (!value) {
+          return;
+        }
+        otsMapUrl = value.trim();
+        localStorage.setItem("atalaya_ots_map_url", otsMapUrl);
       }
       window.open(otsMapUrl, "_blank", "noopener");
     }

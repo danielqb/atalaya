@@ -9,7 +9,11 @@ from typing import Any
 from urllib import parse, request
 from xml.etree import ElementTree
 
+from dotenv import load_dotenv
+
 from atalaya.core.models import EventValidationError
+
+load_dotenv()
 
 
 class OpenTAKServerError(RuntimeError):

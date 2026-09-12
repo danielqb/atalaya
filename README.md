@@ -90,6 +90,8 @@ OTS_PASSWORD=password
 OTS_VERIFY_TLS=true
 ```
 
+La app carga `.env` automaticamente al iniciar. Si solo quieres abrir el mapa desde el dashboard sin reiniciar el backend, el boton `Abrir mapa OTS` permite pegar la URL del WebUI de OpenTAKServer y la guarda en el navegador.
+
 Tambien se puede usar token directo:
 
 ```bash

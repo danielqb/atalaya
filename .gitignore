@@ -11,3 +11,4 @@ dist/
 build/
 coverage/
 knowledge_base/vectorstore/
+.venv/

@@ -9,6 +9,7 @@ from fastapi.responses import HTMLResponse
 
 from atalaya.core.models import EventValidationError
 from atalaya.core.processor import process_cot_payload
+from atalaya.core.voice import speak_if_high_priority
 from atalaya.data_sources.opentak import (
     OpenTAKServerClient,
     OpenTAKServerConfig,
@@ -83,6 +84,7 @@ def sync_ots_cot(page: int = 1, per_page: int = 20) -> dict[str, Any]:
             skipped.append({"uid": record.get("uid"), "reason": str(exc)})
             continue
         EVENTS.insert(0, event)
+        speak_if_high_priority(event)
         processed.append(event)
 
     return {"events": processed, "skipped": skipped}
@@ -100,6 +102,7 @@ async def publish_to_ots(payload: dict[str, Any]) -> dict[str, Any]:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
     EVENTS.insert(0, event)
+    speak_if_high_priority(event)
     return {"event": event, "ots": ots_result}
 
 
@@ -121,6 +124,7 @@ def publish_demo_to_ots() -> dict[str, Any]:
             failed.append({"uid": payload.get("uid"), "reason": str(exc)})
             continue
         EVENTS.insert(0, event)
+        speak_if_high_priority(event)
         published.append({"event": event, "ots": ots_result})
 
     return {"published": published, "failed": failed}
@@ -135,6 +139,7 @@ async def ingest_cot(payload: dict[str, Any]) -> dict[str, Any]:
 
     event = processed.to_dict()
     EVENTS.insert(0, event)
+    speak_if_high_priority(event)
     return event
 
 
@@ -156,6 +161,7 @@ def simulate_events() -> dict[str, Any]:
     for payload in sample_events:
         event = process_cot_payload(payload).to_dict()
         EVENTS.insert(0, event)
+        speak_if_high_priority(event)
         processed.append(event)
     return {"events": processed}
 

@@ -169,7 +169,28 @@ graph TD
 
 ### 1. Ingesta
 
-Endpoint MVP:
+Implementado: en vez de `pytak`, `src/atalaya/data_sources/opentak.py` (`OpenTAKServerClient`)
+habla REST directo contra OTS (login con `OTS_USERNAME`/`OTS_PASSWORD`, `/api/cot` con
+paginacion para leer eventos, `/api/casevac` y `/api/markers` para publicar). El endpoint
+`/api/ots/sync` de la API de Atalaya (`src/atalaya/api/main.py`) hace el pull y normaliza
+cada registro con `cot_record_to_atalaya_payload`.
+
+Se evaluo tambien consumir el Socket.IO en vivo de OTS (namespace `/socket.io`, eventos
+`casevac`/`alert`/`point`/`marker`/`eud` — ver `opentakserver/cot_parser/cot_parser.py`
+en el repo de OpenTAKServer) para push en tiempo real en vez de polling. Se descarto por
+tiempo para el MVP; queda como mejora si se necesita latencia menor al intervalo de sync.
+
+Nota de bootstrap: los endpoints REST de OTS que crean CoT (`/api/casevac`, marker, etc.)
+usan `OTS_NODE_ID` como `sender_uid`, y ese uid debe existir en la tabla `euds` o la
+insercion falla con `ForeignKeyViolation`. En una instancia fresca hay que fijar
+`OTS_NODE_ID` en `ots/config.yml` (no solo en `ots_config.env`, que se ignora una vez
+que `config.yml` ya existe) y registrar un EUD para ese uid una sola vez:
+
+```sql
+INSERT INTO euds (uid, callsign, last_status) VALUES ('atalaya_server_node', 'Atalaya-Server', 'Connected');
+```
+
+Endpoint MVP (fallback si OTS no esta disponible, ver seccion Fallbacks):
 
 ```http
 POST /api/cot

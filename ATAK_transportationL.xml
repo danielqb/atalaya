@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<customWmsMapSource>
+    <name>EMSR916 - Transportation Line</name>
+    <minZoom>1</minZoom>
+    <maxZoom>20</maxZoom>
+    <tileType>PNG</tileType>
+    <url>https://geoserver.coast-wind.org/geoserver/coast_wind_data/wms?</url>
+    <version>1.1.1</version>
+    <layers>coast_wind_data:EMSR916_AOI01_GRA_PRODUCT_transportationL_v1</layers>
+    <coordinatesystem>EPSG:4326</coordinatesystem>
+    <format>image/png</format>
+    <transparent>true</transparent>
+</customWmsMapSource>

@@ -10,7 +10,7 @@ El problema principal que resuelve es el exceso de informacion no confiable: fal
 
 ## MVP Hackathon
 
-Para una entrega realista en 4h15, el alcance recomendado esta definido en [docs/mvp-spec.md](docs/mvp-spec.md).
+Para una entrega realista en 4h15, el alcance recomendado esta definido en [docs/mvp-spec.md](docs/mvp-spec.md). El orden de construccion por fases esta en [docs/build-phases.md](docs/build-phases.md).
 
 El bucle minimo que se debe dejar funcionando de punta a punta:
 

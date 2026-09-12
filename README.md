@@ -22,6 +22,56 @@ El bucle minimo que se debe dejar funcionando de punta a punta:
 
 OpenTAKServer y el Helm Chart se tratan como infraestructura base reusada. El entregable construido durante el evento es Atalaya: listener, normalizador, motor geografico, generador tactico y dashboard.
 
+## Estado Actual Del Piloto
+
+Ya existe una primera base ejecutable del bucle tactico:
+
+- API `POST /api/cot` para recibir eventos CoT/JSON.
+- API `POST /api/simulate` para cargar eventos de demo.
+- API `GET /api/events` para consultar el feed procesado.
+- Calculo de distancia, rumbo y direccion relativa.
+- Generador tactico deterministico con contrato compatible para LLM.
+- Dashboard minimo en `/`.
+- Tests de motor geo y procesamiento.
+
+## Como Ejecutar
+
+Instalar dependencias:
+
+```bash
+uv sync --extra dev
+```
+
+Ejecutar tests:
+
+```bash
+uv run pytest -q
+```
+
+Revisar lint:
+
+```bash
+uv run ruff check .
+```
+
+Levantar la API y dashboard:
+
+```bash
+uv run uvicorn atalaya.api.main:app --app-dir src --host 127.0.0.1 --port 8000
+```
+
+Abrir:
+
+```text
+http://127.0.0.1:8000
+```
+
+Enviar eventos simulados desde terminal:
+
+```bash
+uv run python scripts/simulate_events.py
+```
+
 ## Objetivo Del Proyecto
 
 Construir un sistema multiagente que:

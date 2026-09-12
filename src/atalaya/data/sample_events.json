@@ -1,0 +1,50 @@
+[
+  {
+    "uid": "demo-casevac-001",
+    "type": "CASEVAC",
+    "callsign": "Alpha-2",
+    "lat": 4.7111,
+    "lon": -74.0721,
+    "time": "2026-09-12T16:25:00Z",
+    "detail": {
+      "message": "1 herido, sangrado moderado, requiere extraccion",
+      "priority": "high"
+    }
+  },
+  {
+    "uid": "demo-find-001",
+    "type": "FINDING",
+    "callsign": "Bravo-1",
+    "lat": 4.7065,
+    "lon": -74.0832,
+    "time": "2026-09-12T16:27:00Z",
+    "detail": {
+      "message": "Persona localizada consciente, movilidad limitada",
+      "priority": "medium"
+    }
+  },
+  {
+    "uid": "demo-hazard-001",
+    "type": "HAZARD",
+    "callsign": "Charlie-3",
+    "lat": 4.7140,
+    "lon": -74.0860,
+    "time": "2026-09-12T16:29:00Z",
+    "detail": {
+      "message": "Cable electrico caido bloqueando ruta principal",
+      "priority": "critical"
+    }
+  },
+  {
+    "uid": "demo-noise-001",
+    "type": "CHAT",
+    "callsign": "Unknown",
+    "lat": 4.7101,
+    "lon": -74.0801,
+    "time": "2026-09-12T16:30:00Z",
+    "detail": {
+      "message": "probando radio, ignora este mensaje",
+      "priority": "low"
+    }
+  }
+]

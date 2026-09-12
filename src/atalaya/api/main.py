@@ -9,6 +9,12 @@ from fastapi.responses import HTMLResponse
 
 from atalaya.core.models import EventValidationError
 from atalaya.core.processor import process_cot_payload
+from atalaya.data_sources.opentak import (
+    OpenTAKServerClient,
+    OpenTAKServerConfig,
+    OpenTAKServerError,
+    cot_record_to_atalaya_payload,
+)
 
 app = FastAPI(title="Atalaya Tactical Event API", version="0.1.0")
 
@@ -20,6 +26,54 @@ STATIC_DIR = Path(__file__).resolve().parents[1] / "static"
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok", "service": "atalaya"}
+
+
+@app.get("/api/ots/config")
+def ots_config() -> dict[str, Any]:
+    try:
+        config = OpenTAKServerConfig.from_env()
+    except OpenTAKServerError:
+        return {"configured": False}
+
+    return {
+        "configured": True,
+        "base_url": config.base_url,
+        "has_token": bool(config.auth_token),
+        "has_credentials": bool(config.username and config.password),
+        "verify_tls": config.verify_tls,
+    }
+
+
+@app.get("/api/ots/health")
+def ots_health() -> dict[str, Any]:
+    try:
+        client = OpenTAKServerClient(OpenTAKServerConfig.from_env())
+        return {"ok": True, "response": client.health()}
+    except OpenTAKServerError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.post("/api/ots/sync")
+def sync_ots_cot(page: int = 1, per_page: int = 20) -> dict[str, Any]:
+    try:
+        client = OpenTAKServerClient(OpenTAKServerConfig.from_env())
+        records = client.fetch_cot(page=page, per_page=per_page)
+    except OpenTAKServerError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    processed = []
+    skipped = []
+    for record in records:
+        try:
+            payload = cot_record_to_atalaya_payload(record)
+            event = process_cot_payload(payload).to_dict()
+        except (EventValidationError, ValueError) as exc:
+            skipped.append({"uid": record.get("uid"), "reason": str(exc)})
+            continue
+        EVENTS.insert(0, event)
+        processed.append(event)
+
+    return {"events": processed, "skipped": skipped}
 
 
 @app.post("/api/cot")

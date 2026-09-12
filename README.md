@@ -29,6 +29,8 @@ Ya existe una primera base ejecutable del bucle tactico:
 - API `POST /api/cot` para recibir eventos CoT/JSON.
 - API `POST /api/simulate` para cargar eventos de demo.
 - API `GET /api/events` para consultar el feed procesado.
+- API `POST /api/ots/sync` para importar CoT desde OpenTAKServer.
+- API `GET /api/ots/health` para verificar conectividad con OpenTAKServer.
 - Calculo de distancia, rumbo y direccion relativa.
 - Generador tactico deterministico con contrato compatible para LLM.
 - Dashboard minimo en `/`.
@@ -71,6 +73,40 @@ Enviar eventos simulados desde terminal:
 ```bash
 uv run python scripts/simulate_events.py
 ```
+
+## Integracion OpenTAKServer
+
+Atalaya puede consumir la API de OpenTAKServer usando `GET /api/cot`. Segun la documentacion oficial de OTS, ese endpoint retorna mensajes CoT paginados y permite filtrar por `how`, `type`, `sender_callsign`, `sender_uid`, `page` y `per_page`.
+
+Configurar `.env`:
+
+```bash
+OTS_BASE_URL=https://your-opentakserver.example
+OTS_USERNAME=administrator
+OTS_PASSWORD=password
+OTS_VERIFY_TLS=true
+```
+
+Tambien se puede usar token directo:
+
+```bash
+OTS_AUTH_TOKEN=your-authentication-token
+```
+
+El token se envia como header `Authentication-Token`, que es el mecanismo recomendado por la documentacion de autenticacion de OpenTAKServer para llamadas posteriores a la API.
+
+Sincronizar eventos CoT desde OTS:
+
+```bash
+curl -X POST "http://127.0.0.1:8000/api/ots/sync?page=1&per_page=20"
+```
+
+Atalaya normaliza cada registro OTS a su contrato interno:
+
+- `point.latitude` / `point.longitude` o coordenadas del XML CoT.
+- `sender_callsign` como fuente tactica.
+- `alert` y `casevac` para clasificar prioridad.
+- `xml` / `remarks` para construir el mensaje operacional cuando exista.
 
 ## Objetivo Del Proyecto
 

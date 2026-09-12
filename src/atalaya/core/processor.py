@@ -13,6 +13,8 @@ DEFAULT_COMMAND_POST = CommandPost(
 def should_accept(event: TacticalEvent) -> tuple[bool, str]:
     if event.event_type == "CHAT":
         return False, "mensaje operativo de baja prioridad"
+    if event.event_type == "POSITION":
+        return False, "posicion OTS registrada sin escalar"
     if event.priority == "low":
         return False, "prioridad baja; se registra sin escalar"
     return True, "evento tactico aceptado para feed operativo"

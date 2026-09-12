@@ -166,6 +166,7 @@
 
     <div class="toolbar">
       <button onclick="simulate()">Simular eventos</button>
+      <button onclick="syncOts()">Sincronizar OTS</button>
       <button class="secondary" onclick="resetEvents()">Limpiar feed</button>
     </div>
 
@@ -253,6 +254,16 @@
 
     async function simulate() {
       await fetch("/api/simulate", { method: "POST" });
+      await fetchEvents();
+    }
+
+    async function syncOts() {
+      const response = await fetch("/api/ots/sync", { method: "POST" });
+      if (!response.ok) {
+        const error = await response.json();
+        alert(`No se pudo sincronizar OTS: ${error.detail}`);
+        return;
+      }
       await fetchEvents();
     }
 

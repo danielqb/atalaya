@@ -7,6 +7,7 @@ ACTION_BY_TYPE = {
     "FINDING": "enviar evaluacion y mantener comunicacion con el equipo",
     "HAZARD": "aislar el area, redirigir unidades y confirmar mitigacion",
     "ALERT": "verificar el reporte y asignar recurso de reconocimiento",
+    "POSITION": "registrar posicion y monitorear cambios relevantes",
 }
 
 def generate_tactical_brief(event: TacticalEvent, geo: GeoAssessment) -> TacticalBrief:

@@ -1,0 +1,3 @@
+pymumble-py3
+elevenlabs
+pydub
